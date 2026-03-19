@@ -1,0 +1,816 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>SeekhoWithRua — Character Controller</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: #04040c; color: #fff; font-family: 'Share Tech Mono', monospace; overflow: hidden; }
+      canvas { display: block; }
+
+      /* ─── HUD ─── */
+      #hud {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        pointer-events: none;
+      }
+
+      /* Control Panel */
+      #panel {
+        position: absolute; top: 14px; left: 14px;
+        background: rgba(4,4,20,0.92);
+        border: 1px solid #3a3870;
+        border-radius: 14px; padding: 16px 18px;
+        width: 270px; pointer-events: all;
+        backdrop-filter: blur(10px);
+      }
+      #panel h2 {
+        font-family: 'Orbitron', sans-serif;
+        color: #7f77ff; font-size: 11px; letter-spacing: 3px;
+        margin-bottom: 14px;
+      }
+
+      .section { margin-bottom: 14px; }
+      .section-title {
+        color: #1D9E75; font-size: 10px; letter-spacing: 2px;
+        margin-bottom: 8px; border-bottom: 1px solid #0a2a1a;
+        padding-bottom: 4px;
+      }
+
+      /* Load buttons */
+      .load-btn {
+        display: block; width: 100%;
+        background: rgba(15,15,35,0.8);
+        border: 1px solid #2a2850;
+        color: #9E9BFF; padding: 7px 10px;
+        border-radius: 7px; cursor: pointer;
+        font-size: 11px; margin-bottom: 5px;
+        text-align: left; transition: all 0.2s;
+        font-family: 'Share Tech Mono', monospace;
+        pointer-events: all;
+      }
+      .load-btn:hover { background: #12123a; border-color: #7f77ff; }
+      .load-btn.active { background: #2a2870; border-color: #7f77ff; color: #fff; }
+
+      /* Anim buttons */
+      #anim-list { display: flex; flex-wrap: wrap; gap: 4px; }
+      .anim-btn {
+        background: rgba(15,15,35,0.8);
+        border: 1px solid #1a3a2a;
+        color: #5DCAA5; padding: 4px 9px;
+        border-radius: 5px; cursor: pointer;
+        font-size: 10px; transition: all 0.2s;
+        font-family: 'Share Tech Mono', monospace;
+        pointer-events: all;
+      }
+      .anim-btn:hover { background: #0a2a18; }
+      .anim-btn.playing { background: #0a3a20; border-color: #1D9E75; color: #fff; }
+
+      /* Keyword input */
+      #keyword-input {
+        width: 100%;
+        background: rgba(15,15,35,0.8);
+        border: 1px solid #2a2850;
+        color: #9E9BFF; padding: 7px 10px;
+        border-radius: 7px; font-size: 11px;
+        font-family: 'Share Tech Mono', monospace;
+        outline: none; transition: border-color 0.2s;
+        pointer-events: all;
+      }
+      #keyword-input:focus { border-color: #7f77ff; }
+      #keyword-hint { color: #333; font-size: 10px; margin-top: 5px; }
+
+      /* Arrow key display */
+      .key-grid {
+        display: grid; grid-template-areas:
+          ". up ."
+          "left down right";
+        grid-template-columns: 36px 36px 36px;
+        gap: 4px; width: fit-content;
+      }
+      .key {
+        width: 32px; height: 32px;
+        background: rgba(15,15,35,0.8);
+        border: 1px solid #2a2850;
+        border-radius: 6px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; color: #444; transition: all 0.1s;
+      }
+      .key[data-dir="up"]    { grid-area: up; }
+      .key[data-dir="left"]  { grid-area: left; }
+      .key[data-dir="down"]  { grid-area: down; }
+      .key[data-dir="right"] { grid-area: right; }
+      .key.active { background: #2a2870; border-color: #7f77ff; color: #9E9BFF; }
+
+      .extra-keys { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+      .extra-key {
+        background: rgba(15,15,35,0.8);
+        border: 1px solid #2a2850;
+        border-radius: 5px; padding: 4px 8px;
+        font-size: 10px; color: #444; transition: all 0.1s;
+      }
+      .extra-key.active { background: #1a3a2a; border-color: #1D9E75; color: #5DCAA5; }
+
+      /* Drop zone */
+      #dropzone {
+        position: absolute; top: 14px; right: 14px;
+        background: rgba(4,4,20,0.92);
+        border: 2px dashed #2a2850;
+        border-radius: 12px; padding: 18px;
+        width: 180px; text-align: center;
+        pointer-events: all; cursor: pointer;
+        transition: all 0.2s; backdrop-filter: blur(10px);
+      }
+      #dropzone:hover, #dropzone.drag-over {
+        border-color: #7f77ff;
+        background: rgba(40,40,120,0.2);
+      }
+      #dropzone .dz-title {
+        font-family: 'Orbitron', sans-serif;
+        color: #7f77ff; font-size: 11px; letter-spacing: 2px;
+      }
+      #dropzone p { color: #333; font-size: 10px; margin-top: 5px; }
+      input[type=file] { display: none; }
+
+      /* Status bar */
+      #status {
+        position: absolute; bottom: 14px; left: 50%;
+        transform: translateX(-50%);
+        background: rgba(4,4,20,0.9);
+        border: 1px solid #1D9E75;
+        border-radius: 20px; padding: 6px 18px;
+        font-size: 11px; color: #5DCAA5;
+        white-space: nowrap; pointer-events: none;
+      }
+
+      /* Action flash */
+      #action-flash {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 32px; font-weight: 900;
+        color: #fff; text-shadow: 0 0 30px #7f77ff;
+        pointer-events: none;
+        opacity: 0; transition: opacity 0.1s;
+      }
+
+      /* Speed slider */
+      #speed-slider {
+        width: 100%; accent-color: #7f77ff;
+        pointer-events: all;
+      }
+
+      /* Info panel bottom right */
+      #info-panel {
+        position: absolute; bottom: 14px; right: 14px;
+        background: rgba(4,4,20,0.85);
+        border: 1px solid #1a1a3a;
+        border-radius: 10px; padding: 10px 14px;
+        font-size: 10px; color: #333;
+        line-height: 1.8; pointer-events: none;
+      }
+      #info-panel span { color: #555; }
+    </style>
+  </head>
+  <body>
+
+  <div id="hud">
+
+    <!-- Left Panel -->
+    <div id="panel">
+      <h2>✦ SEEKHOWITHRUA CONTROLLER</h2>
+
+      <div class="section">
+        <div class="section-title">LOAD MODEL</div>
+        <button class="load-btn active" onclick="loadBuiltIn()">▶ Built-in Test Character</button>
+        <button class="load-btn" onclick="document.getElementById('file-input').click()">📁 Load GLB / FBX File</button>
+        <input type="file" id="file-input" accept=".glb,.gltf" onchange="loadFromFile(event)">
+      </div>
+
+      <div class="section">
+        <div class="section-title">ANIMATIONS (click or use keyword)</div>
+        <div id="anim-list"><span style="color:#222;font-size:10px">Load a GLB to see animations</span></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">KEYWORD COMMAND</div>
+        <input id="keyword-input" type="text" placeholder="Type: run, jump, dance, wave, idle..."
+          onkeydown="handleKeyword(event)">
+        <div id="keyword-hint">Press ENTER to trigger action</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">ARROW KEYS</div>
+        <div class="key-grid">
+          <div class="key" data-dir="up">↑</div>
+          <div class="key" data-dir="left">←</div>
+          <div class="key" data-dir="down">↓</div>
+          <div class="key" data-dir="right">→</div>
+        </div>
+        <div class="extra-keys">
+          <div class="extra-key" id="key-space">SPACE jump</div>
+          <div class="extra-key" id="key-shift">SHIFT run</div>
+          <div class="extra-key" id="key-e">E action</div>
+          <div class="extra-key" id="key-q">Q wave</div>
+          <div class="extra-key" id="key-r">R reset</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">MOVE SPEED</div>
+        <input type="range" id="speed-slider" min="1" max="10" value="4"
+          oninput="moveSpeed = this.value / 10 * 0.15">
+      </div>
+    </div>
+
+    <!-- Drop zone -->
+    <div id="dropzone" onclick="document.getElementById('file-input').click()">
+      <div class="dz-title">DROP GLB</div>
+      <p>or click to browse</p>
+      <p style="margin-top:4px;color:#222">.glb / .gltf</p>
+    </div>
+
+    <!-- Action flash -->
+    <div id="action-flash">JUMP!</div>
+
+    <!-- Status -->
+    <div id="status">▶ Load a GLB — then use arrow keys to move</div>
+
+    <!-- Hint panel -->
+    <div id="info-panel">
+      <span>↑↓←→</span> Move &nbsp;|&nbsp; <span>SHIFT+↑</span> Run<br>
+      <span>SPACE</span> Jump &nbsp;|&nbsp; <span>E</span> Action &nbsp;|&nbsp; <span>Q</span> Wave<br>
+      <span>G</span> Grid &nbsp;|&nbsp; <span>W</span> Wireframe &nbsp;|&nbsp; <span>C</span> Cam mode<br>
+      <span>Scroll</span> Zoom &nbsp;|&nbsp; <span>Drag</span> Orbit
+    </div>
+  </div>
+
+  <script type="module">
+  import * as THREE from 'https://esm.sh/three@0.160.0'
+  import { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js'
+  import { GLTFLoader } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js'
+  import { FBXLoader } from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/FBXLoader.js'
+
+  // ═══════════════════════════════════
+  //  SCENE SETUP
+  // ═══════════════════════════════════
+  const scene = new THREE.Scene()
+  scene.background = new THREE.Color(0x060614)
+  scene.fog = new THREE.FogExp2(0x060614, 0.035)
+
+  const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.01, 500)
+  camera.position.set(0, 3, 8)
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true })
+  renderer.setSize(innerWidth, innerHeight)
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+  renderer.shadowMap.enabled = true
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 1.1
+  document.body.appendChild(renderer.domElement)
+
+  const controls = new OrbitControls(camera, renderer.domElement)
+  controls.enableDamping = true
+  controls.dampingFactor = 0.07
+  controls.target.set(0, 1, 0)
+  controls.minDistance = 1
+  controls.maxDistance = 40
+
+  // ─── LIGHTS ───
+  scene.add(new THREE.AmbientLight(0xffffff, 0.5))
+
+  const key = new THREE.DirectionalLight(0xffffff, 2.5)
+  key.position.set(6, 10, 6)
+  key.castShadow = true
+  key.shadow.mapSize.setScalar(2048)
+  key.shadow.camera.near = 0.5
+  key.shadow.camera.far = 60
+  key.shadow.camera.left = key.shadow.camera.bottom = -12
+  key.shadow.camera.right = key.shadow.camera.top = 12
+  scene.add(key)
+
+  const fill = new THREE.DirectionalLight(0x7f77ff, 0.8)
+  fill.position.set(-6, 4, -4)
+  scene.add(fill)
+
+  const rim = new THREE.DirectionalLight(0x1D9E75, 0.5)
+  rim.position.set(0, 6, -8)
+  scene.add(rim)
+
+  // ─── GROUND ───
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: 0x080818, roughness: 0.9, metalness: 0.1
+  })
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), groundMat)
+  ground.rotation.x = -Math.PI / 2
+  ground.receiveShadow = true
+  scene.add(ground)
+
+  // Grid
+  const grid = new THREE.GridHelper(40, 40, 0x151530, 0x0d0d22)
+  scene.add(grid)
+
+  // ─── GLOWING CIRCLE UNDER CHARACTER ───
+  const circleGeo = new THREE.CircleGeometry(1, 64)
+  const circleMat = new THREE.MeshBasicMaterial({
+    color: 0x7f77ff, transparent: true, opacity: 0.12
+  })
+  const circle = new THREE.Mesh(circleGeo, circleMat)
+  circle.rotation.x = -Math.PI / 2
+  circle.position.y = 0.01
+  scene.add(circle)
+
+  // ═══════════════════════════════════
+  //  STATE
+  // ═══════════════════════════════════
+  let model = null
+  let mixer = null
+  let animations = {}       // name → AnimationAction
+  let currentAction = null
+  let currentActionName = ''
+  const clock = new THREE.Clock()
+
+  window.moveSpeed = 0.06
+
+  const keys = {}
+  let isJumping = false
+  let jumpVel = 0
+  let camFollowMode = false
+
+  // Character velocity (smooth movement)
+  let velX = 0, velZ = 0
+  const friction = 0.82
+
+  const gltfLoader = new GLTFLoader()
+
+  // ═══════════════════════════════════
+  //  STATUS & FLASH
+  // ═══════════════════════════════════
+  function setStatus(msg) {
+    document.getElementById('status').textContent = msg
+  }
+
+  function flashAction(label) {
+    const el = document.getElementById('action-flash')
+    el.textContent = label
+    el.style.opacity = 1
+    setTimeout(() => el.style.opacity = 0, 700)
+  }
+
+  // ═══════════════════════════════════
+  //  LOAD GLB
+  // ═══════════════════════════════════
+  function loadGLB(url, name) {
+    setStatus(`⏳ Loading ${name}...`)
+    if (model) { scene.remove(model); model = null; mixer = null; animations = {} }
+
+    gltfLoader.load(url, (gltf) => {
+      model = gltf.scene
+
+      // Auto-scale
+      const box = new THREE.Box3().setFromObject(model)
+      const size = box.getSize(new THREE.Vector3())
+      const maxDim = Math.max(size.x, size.y, size.z)
+      const scale = 3 / maxDim
+      model.scale.setScalar(scale)
+
+      // Place on ground
+      box.setFromObject(model)
+      model.position.y = -box.min.y * scale
+
+      // Shadows
+      model.traverse(c => {
+        if (c.isMesh) { c.castShadow = true; c.receiveShadow = true }
+      })
+
+      scene.add(model)
+
+      // Register animations
+      if (gltf.animations.length > 0) {
+        mixer = new THREE.AnimationMixer(model)
+        gltf.animations.forEach(clip => {
+          const action = mixer.clipAction(clip)
+          animations[clip.name.toLowerCase()] = action
+          animations[clip.name] = action  // keep original too
+        })
+
+        buildAnimUI(gltf.animations)
+        // Auto-play first (usually idle)
+        playAnim(gltf.animations[0].name, true)
+        setStatus(`✅ ${name} · ${gltf.animations.length} animations · Use arrow keys!`)
+      } else {
+        setStatus(`✅ ${name} loaded · No animations found`)
+      }
+    },
+    p => setStatus(`⏳ ${name}: ${Math.round(p.loaded/p.total*100)}%`),
+    err => setStatus(`❌ Error: ${err.message}`)
+    ) 
+  }
+
+  // ═══════════════════════════════════
+  //  PLAY ANIMATION
+  // ═══════════════════════════════════
+  function playAnim(name, loop = true) {
+    if (!mixer) return false
+
+    // Try exact, then lowercase, then fuzzy match
+    let action = animations[name] || animations[name.toLowerCase()]
+    if (!action) {
+      // Fuzzy: find first key that includes the keyword
+      const key = Object.keys(animations).find(k =>
+        k.toLowerCase().includes(name.toLowerCase()) ||
+        name.toLowerCase().includes(k.toLowerCase().replace('mixamo.com', '').trim())
+      )
+      if (key) action = animations[key]
+    }
+
+    if (!action) return false
+
+    if (currentAction && currentAction !== action) {
+      currentAction.fadeOut(0.3)
+    }
+
+    action.reset()
+    action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity)
+    action.clampWhenFinished = !loop
+    action.fadeIn(0.3)
+    action.play()
+
+    currentAction = action
+    currentActionName = name
+
+    // Update UI highlight
+    document.querySelectorAll('.anim-btn').forEach(b => b.classList.remove('playing'))
+    const btn = document.querySelector(`.anim-btn[data-name="${name}"]`)
+    if (btn) btn.classList.add('playing')
+
+    return true
+  }
+
+  // ═══════════════════════════════════
+  //  BUILD ANIMATION BUTTONS
+  // ═══════════════════════════════════
+  function buildAnimUI(animList) {
+    const list = document.getElementById('anim-list')
+    list.innerHTML = ''
+    animList.forEach(clip => {
+      const btn = document.createElement('button')
+      btn.className = 'anim-btn'
+      btn.setAttribute('data-name', clip.name)
+      // Clean Mixamo names like "mixamo.com/Walk" → "Walk"
+      const label = clip.name.replace(/mixamo\.com\//i,'').split('_').join(' ')
+      btn.textContent = label.length > 14 ? label.slice(0,13)+'…' : label
+      btn.title = clip.name
+      btn.onclick = () => { playAnim(clip.name, true); flashAction(label) }
+      list.appendChild(btn)
+    })
+  }
+
+  // ═══════════════════════════════════
+  //  BUILT-IN TEST CHARACTER (cube rig)
+  // ═══════════════════════════════════
+  window.loadBuiltIn = function() {
+    if (model) { scene.remove(model); model = null; mixer = null; animations = {} }
+    document.getElementById('anim-list').innerHTML =
+      '<span style="color:#222;font-size:10px">Use keywords or arrow keys — model moves procedurally</span>'
+
+    // Simple humanoid from primitives
+    const g = new THREE.Group()
+
+    const mat = new THREE.MeshStandardMaterial({ color: 0x7f77ff, roughness: 0.4, metalness: 0.3 })
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x534AB7, roughness: 0.4 })
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xffc19a, roughness: 0.6 })
+
+    // Body
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.3), bodyMat)
+    body.position.y = 1.2
+    g.add(body)
+    // Head
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.35), headMat)
+    head.position.y = 1.85
+    g.add(head)
+    // Arms
+    const armL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.65, 0.18), mat)
+    armL.position.set(-0.42, 1.15, 0)
+    g.add(armL)
+    const armR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.65, 0.18), mat)
+    armR.position.set(0.42, 1.15, 0)
+    g.add(armR)
+    // Legs
+    const legL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.7, 0.2), mat)
+    legL.position.set(-0.18, 0.55, 0)
+    g.add(legL)
+    const legR = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.7, 0.2), mat)
+    legR.position.set(0.18, 0.55, 0)
+    g.add(legR)
+
+    g.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+    scene.add(g)
+    model = g
+    model.userData.builtIn = true
+    model.userData.armL = armL
+    model.userData.armR = armR
+    model.userData.legL = legL
+    model.userData.legR = legR
+    model.userData.head = head
+    model.userData.body = body
+
+    setStatus('✅ Test character loaded · Arrow keys to move · Type keywords · Load your GLB!')
+  }
+
+  // ═══════════════════════════════════
+  //  FILE INPUT
+  // ═══════════════════════════════════
+  window.loadFromFile = function(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    loadGLB(URL.createObjectURL(file), file.name)
+  }
+
+  // Drag & drop
+  const dz = document.getElementById('dropzone')
+  document.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over') })
+  document.addEventListener('dragleave', () => dz.classList.remove('drag-over'))
+  document.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag-over')
+    const file = e.dataTransfer.files[0]
+    if (file && (file.name.endsWith('.glb') || file.name.endsWith('.gltf'))) {
+      loadGLB(URL.createObjectURL(file), file.name)
+    }
+  })
+
+  // ═══════════════════════════════════
+  //  KEYWORD → ANIMATION MAPPING
+  // ═══════════════════════════════════
+  const keywordMap = {
+    idle:    ['idle','Idle','T-Pose','bind','TPose'],
+    walk:    ['walk','Walk','walking','Walking','Strafe'],
+    run:     ['run','Run','running','Running','Sprint','sprint','jog','Jog'],
+    jump:    ['jump','Jump','jumping','Jumping','leap','Leap'],
+    dance:   ['dance','Dance','dancing','Dancing','Samba','Hip Hop','Gangnam'],
+    wave:    ['wave','Wave','waving','greet','Greet','hello'],
+    attack:  ['attack','Attack','punch','Punch','kick','Kick','hit','Hit','strike'],
+    fall:    ['fall','Fall','falling','Falling','death','Death','die','Die'],
+    sit:     ['sit','Sit','sitting','Sitting','crouch','Crouch'],
+    cheer:   ['cheer','Cheer','celebrate','victory','Victory','win'],
+    swim:    ['swim','Swim','swimming'],
+    climb:   ['climb','Climb'],
+    shoot:   ['shoot','Shoot','fire','Fire','aim','Aim'],
+    taunt:   ['taunt','Taunt','laugh','Laugh'],
+    sneak:   ['sneak','Sneak','creep','Creep','tip','tiptoe'],
+  }
+
+  function triggerKeyword(word) {
+    const w = word.toLowerCase().trim()
+
+    // Jump is always procedural
+    if (w === 'jump' || w === 'space') { doJump(); return }
+
+    // Find mapping
+    let tried = false
+    for (const [key, variants] of Object.entries(keywordMap)) {
+      if (key === w || variants.some(v => v.toLowerCase() === w)) {
+        for (const v of variants) {
+          if (playAnim(v, true)) { flashAction(key.toUpperCase()); tried = true; break }
+        }
+        if (tried) break
+      }
+    }
+
+    // Fallback: direct name search
+    if (!tried) {
+      if (playAnim(w, true)) flashAction(w.toUpperCase())
+      else setStatus(`❓ Animation "${word}" not found — check anim list`)
+    }
+  }
+
+  // ═══════════════════════════════════
+  //  KEYBOARD INPUT
+  // ═══════════════════════════════════
+  const keyVisuals = {
+    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+    ' ': 'space', Shift: 'shift', e: 'e', q: 'q', r: 'r'
+  }
+
+  document.addEventListener('keydown', e => {
+    // Don't intercept when typing in input
+    if (e.target === document.getElementById('keyword-input')) return
+
+    keys[e.key] = true
+
+    // Arrow key visuals
+    const dir = keyVisuals[e.key]
+    if (dir) {
+      const el = document.querySelector(`.key[data-dir="${dir}"]`) ||
+                document.getElementById(`key-${dir}`)
+      if (el) el.classList.add('active')
+    }
+
+    // Single-press actions
+    if (e.key === ' ') { e.preventDefault(); doJump() }
+    if (e.key === 'e' || e.key === 'E') { triggerKeyword('attack'); flashAction('ACTION!') }
+    if (e.key === 'q' || e.key === 'Q') { triggerKeyword('wave'); flashAction('WAVE!') }
+    if (e.key === 'r' || e.key === 'R') { resetCam() }
+    if (e.key === 'g' || e.key === 'G') { grid.visible = !grid.visible }
+    if (e.key === 'c' || e.key === 'C') { camFollowMode = !camFollowMode; setStatus(camFollowMode ? '📷 Camera: FOLLOW mode' : '📷 Camera: FREE orbit') }
+    if (e.key === 'w' || e.key === 'W') {
+      if (model) model.traverse(c => {
+        if (c.isMesh) c.material.wireframe = !c.material.wireframe
+      })
+    }
+  })
+
+  document.addEventListener('keyup', e => {
+    keys[e.key] = false
+    const dir = keyVisuals[e.key]
+    if (dir) {
+      const el = document.querySelector(`.key[data-dir="${dir}"]`) ||
+                document.getElementById(`key-${dir}`)
+      if (el) el.classList.remove('active')
+    }
+
+    // When arrow keys released, go back to idle
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+      const anyArrow = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].some(k => keys[k])
+      if (!anyArrow && !isJumping) {
+        tryPlayState('idle')
+      }
+    }
+  })
+
+  // Keyword input
+  window.handleKeyword = function(e) {
+    if (e.key === 'Enter') {
+      const val = e.target.value.trim()
+      if (val) { triggerKeyword(val); e.target.value = '' }
+    }
+  }
+
+  // ═══════════════════════════════════
+  //  JUMP
+  // ═══════════════════════════════════
+  function doJump() {
+    if (isJumping) return
+    isJumping = true
+    jumpVel = 0.12
+    flashAction('JUMP!')
+    tryPlayState('jump')
+  }
+
+  // ═══════════════════════════════════
+  //  STATE MACHINE
+  // ═══════════════════════════════════
+  let lastState = ''
+  function tryPlayState(state) {
+    if (state === lastState) return
+    lastState = state
+    if (!model?.userData.builtIn) {
+      triggerKeyword(state)
+    }
+  }
+
+  function resetCam() {
+    camera.position.set(0, 3, 8)
+    controls.target.set(0, 1, 0)
+  }
+
+  // ═══════════════════════════════════
+  //  RENDER LOOP
+  // ═══════════════════════════════════
+  const up = new THREE.Vector3(0, 1, 0)
+
+  function animate() {
+    requestAnimationFrame(animate)
+    const delta = clock.getDelta()
+    const elapsed = clock.getElapsedTime()
+
+    controls.update()
+    if (mixer) mixer.update(delta)
+
+    if (model) {
+      const isRunning = keys['Shift']
+      const speed = isRunning ? window.moveSpeed * 2.2 : window.moveSpeed
+
+      const moveZ = (keys['ArrowUp'] ? -1 : 0) + (keys['ArrowDown'] ? 1 : 0)
+      const moveX = (keys['ArrowLeft'] ? -1 : 0) + (keys['ArrowRight'] ? 1 : 0)
+      const moving = moveX !== 0 || moveZ !== 0
+
+      // Camera-relative movement
+      const camDir = new THREE.Vector3()
+      camera.getWorldDirection(camDir)
+      camDir.y = 0; camDir.normalize()
+      const camRight = new THREE.Vector3().crossVectors(camDir, up).normalize()
+
+      const moveVec = new THREE.Vector3()
+      moveVec.addScaledVector(camDir, -moveZ)
+      moveVec.addScaledVector(camRight, moveX)
+      if (moveVec.lengthSq() > 0) moveVec.normalize()
+
+      velX += moveVec.x * speed
+      velZ += moveVec.z * speed
+      velX *= friction
+      velZ *= friction
+
+      model.position.x += velX
+      model.position.z += velZ
+
+      // Rotate to face direction
+      if (Math.abs(velX) + Math.abs(velZ) > 0.001) {
+        const targetAngle = Math.atan2(velX, velZ)
+        model.rotation.y = THREE.MathUtils.lerp(model.rotation.y, targetAngle, 0.15)
+      }
+
+      // Jump
+      if (isJumping) {
+        model.position.y += jumpVel
+        jumpVel -= 0.007
+        if (model.position.y <= 0) {
+          model.position.y = 0
+          isJumping = false
+          jumpVel = 0
+          tryPlayState(moving ? (isRunning ? 'run' : 'walk') : 'idle')
+          lastState = ''
+        }
+      }
+
+      // State machine for animation
+      if (!isJumping) {
+        if (moving && isRunning) tryPlayState('run')
+        else if (moving) tryPlayState('walk')
+        else tryPlayState('idle')
+      }
+
+      // Built-in procedural animation
+      if (model.userData.builtIn) {
+        animateBuiltIn(elapsed, moving, isRunning)
+      }
+
+      // Circle glow follows
+      circle.position.x = model.position.x
+      circle.position.z = model.position.z
+      circle.material.opacity = 0.08 + Math.sin(elapsed * 2) * 0.04
+
+      // Camera follow
+      if (camFollowMode) {
+        const targetCamPos = new THREE.Vector3(
+          model.position.x, model.position.y + 3, model.position.z + 7
+        )
+        camera.position.lerp(targetCamPos, 0.05)
+        controls.target.lerp(
+          new THREE.Vector3(model.position.x, model.position.y + 1, model.position.z), 0.1
+        )
+      }
+    }
+
+    renderer.render(scene, camera)
+  }
+
+  // ═══════════════════════════════════
+  //  BUILT-IN PROCEDURAL ANIMATION
+  // ═══════════════════════════════════
+  function animateBuiltIn(t, moving, running) {
+    if (!model?.userData.builtIn) return
+    const { armL, armR, legL, legR, head, body } = model.userData
+    const spd = running ? 10 : 6
+
+    if (moving) {
+      // Walk/run cycle
+      armL.rotation.x = Math.sin(t * spd) * 0.6
+      armR.rotation.x = -Math.sin(t * spd) * 0.6
+      legL.rotation.x = -Math.sin(t * spd) * 0.5
+      legR.rotation.x = Math.sin(t * spd) * 0.5
+      body.position.y = 1.2 + Math.abs(Math.sin(t * spd * 2)) * 0.04
+    } else {
+      // Idle breathing
+      armL.rotation.x = Math.sin(t * 1.2) * 0.05
+      armR.rotation.x = Math.sin(t * 1.2) * 0.05
+      legL.rotation.x = 0
+      legR.rotation.x = 0
+      body.position.y = 1.2 + Math.sin(t * 1.5) * 0.02
+      head.rotation.y = Math.sin(t * 0.6) * 0.1
+    }
+
+    if (isJumping) {
+      armL.rotation.x = -1.2
+      armR.rotation.x = -1.2
+      legL.rotation.x = 0.4
+      legR.rotation.x = 0.4
+    }
+  }
+
+  // ═══════════════════════════════════
+  //  RESIZE
+  // ═══════════════════════════════════
+  window.addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(innerWidth, innerHeight)
+  })
+
+  // ─── START ───
+  loadBuiltIn()
+  animate()
+  </script>
+  </body>
+  </html>
