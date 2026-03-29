@@ -575,9 +575,12 @@ class DataQuestGame {
   }
   
   playSound(type) {
-    // Use existing sound system from memory game
-    if (typeof AudioManager !== 'undefined') {
-      AudioManager.play(type);
+    // Use the gameAudio instance
+    if (typeof gameAudio !== 'undefined') {
+      if (type === 'success') gameAudio.playSuccess();
+      else if (type === 'error') gameAudio.playError();
+      else if (type === 'achievement') gameAudio.playAchievement();
+      else if (type === 'gameover') gameAudio.playGameOver();
     }
   }
   

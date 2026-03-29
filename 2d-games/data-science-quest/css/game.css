@@ -252,6 +252,9 @@ body {
   cursor: pointer;
   transition: all 0.3s;
   text-align: left;
+  pointer-events: auto;
+  position: relative;
+  z-index: 150;
 }
 
 .option-btn:hover {
