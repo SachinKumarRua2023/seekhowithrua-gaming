@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Dev Warrior - Full Stack Adventure Game</title>
+  <link rel="stylesheet" href="css/game.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="matrix-bg" id="matrixBg"></div>
+  
+  <div class="game-wrapper">
+    <header class="game-header">
+      <div class="logo">&lt;WEB<span>WARRIOR</span>/&gt;</div>
+      <div class="player-stats">
+        <div class="stat">
+          <span class="stat-label">Level</span>
+          <span class="stat-value" id="levelDisplay">1</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">XP</span>
+          <span class="stat-value" id="scoreDisplay">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Commits</span>
+          <span class="stat-value" id="keysDisplay">0/30</span>
+        </div>
+      </div>
+      <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </header>
+
+    <main class="game-main">
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+      
+      <div class="ui-overlay" id="uiOverlay">
+        <div class="quiz-modal" id="quizModal" style="display: none;">
+          <div class="quiz-container code-theme">
+            <div class="quiz-header">
+              <span class="section-badge" id="sectionBadge">Frontend</span>
+              <span class="question-counter" id="questionCounter">1/25</span>
+            </div>
+            <div class="code-editor">
+              <div class="line-numbers">
+                <span>1</span>
+                <span>2</span>
+                <span>3</span>
+              </div>
+              <div class="code-area">
+                <pre id="codeSnippet">// Loading challenge...</pre>
+              </div>
+            </div>
+            <div class="hint-box" id="hintBox">
+              <span class="hint-label">💡 Debug Hint:</span>
+              <span class="hint-text" id="hintText">Console.log your way to victory!</span>
+            </div>
+            <div class="question-box">
+              <h3 class="question-text" id="questionText">Initializing build process...</h3>
+            </div>
+            <div class="options-grid code-options" id="optionsGrid"></div>
+            <div class="quiz-footer">
+              <button class="skip-btn" onclick="skipQuestion()">Skip Test (-50)</button>
+              <button class="hint-btn" onclick="showExtraHint()">Stack Overflow (-25)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="level-modal" id="levelModal" style="display: none;">
+          <div class="level-complete">
+            <div class="deploy-animation">🚀</div>
+            <h2>Build Successful!</h2>
+            <p id="levelCompleteText">All tests passing! Ready to deploy.</p>
+            <div class="build-metrics" id="buildMetrics">
+              <span class="metric">Tests: <strong id="testValue">25/25 ✓</strong></span>
+              <span class="metric">Coverage: <strong id="coverageValue">98%</strong></span>
+            </div>
+            <button class="next-btn" onclick="nextSection()">Deploy to Production</button>
+          </div>
+        </div>
+
+        <div class="game-menu" id="gameMenu" style="display: none;">
+          <div class="menu-panel">
+            <h2>DevTools</h2>
+            <button class="menu-option" onclick="resumeGame()">Resume Debugging</button>
+            <button class="menu-option" onclick="restartLevel()">Reset Environment</button>
+            <button class="menu-option" onclick="showInstructions()">Documentation</button>
+            <button class="menu-option" onclick="returnToHub()">Exit to Terminal</button>
+          </div>
+        </div>
+
+        <div class="instructions" id="instructions" style="display: none;">
+          <div class="instructions-panel">
+            <h2>Developer Documentation</h2>
+            <div class="instruction-item">
+              <span class="icon">💻</span>
+              <p>Navigate through <strong>Frontend, Backend & Database</strong> layers</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🐛</span>
+              <p>Solve <strong>Coding Challenges</strong> to fix bugs and build features</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">📦</span>
+              <p>Collect <strong>NPM Packages</strong> to unlock new abilities</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🔥</span>
+              <p>Avoid <strong>Production Fires</strong> and Legacy Code obstacles</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">☕</span>
+              <p>Drink <strong>Coffee</strong> for speed boosts</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🚀</span>
+              <p>Deploy working code to <strong>Production</strong>!</p>
+            </div>
+            <button class="close-btn" onclick="hideInstructions()">npm start</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="level-progress code-progress">
+      <div class="progress-section" id="basicSection">
+        <span class="section-name">Frontend</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="basicProgress"></div>
+        </div>
+        <span class="fragment-status" id="basicStatus">⚪</span>
+      </div>
+      <div class="progress-section" id="intermediateSection">
+        <span class="section-name">Backend</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="intermediateProgress"></div>
+        </div>
+        <span class="fragment-status" id="intermediateStatus">⚪</span>
+      </div>
+      <div class="progress-section" id="advancedSection">
+        <span class="section-name">Database</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="advancedProgress"></div>
+        </div>
+        <span class="fragment-status" id="advancedStatus">⚪</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/memory-game-api.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

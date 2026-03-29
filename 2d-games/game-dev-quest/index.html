@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Dev Quest - Game Development Adventure</title>
+  <link rel="stylesheet" href="css/game.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="pixel-bg" id="pixelBg"></div>
+  
+  <div class="game-wrapper">
+    <header class="game-header">
+      <div class="logo pixel">GAME<span>DEV</span></div>
+      <div class="player-stats">
+        <div class="stat">
+          <span class="stat-label">World</span>
+          <span class="stat-value" id="levelDisplay">1</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">XP</span>
+          <span class="stat-value" id="scoreDisplay">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Assets</span>
+          <span class="stat-value" id="keysDisplay">0/30</span>
+        </div>
+      </div>
+      <button class="menu-btn pixel" onclick="toggleMenu()">☰</button>
+    </header>
+
+    <main class="game-main">
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+      
+      <div class="ui-overlay" id="uiOverlay">
+        <div class="quiz-modal" id="quizModal" style="display: none;">
+          <div class="quiz-container retro-theme">
+            <div class="quiz-header">
+              <span class="section-badge" id="sectionBadge">Level 1-1</span>
+              <span class="question-counter" id="questionCounter">1/25</span>
+            </div>
+            <div class="game-preview">
+              <div class="crt-screen">
+                <div class="screen-content" id="screenContent">
+                  <div class="sprite-demo">👾</div>
+                </div>
+                <div class="scanlines"></div>
+              </div>
+            </div>
+            <div class="hint-box" id="hintBox">
+              <span class="hint-label">💡 Quest Log:</span>
+              <span class="hint-text" id="hintText">Defeat the boss to unlock...</span>
+            </div>
+            <div class="question-box">
+              <h3 class="question-text pixel" id="questionText">Loading quest...</h3>
+            </div>
+            <div class="options-grid" id="optionsGrid"></div>
+            <div class="quiz-footer">
+              <button class="skip-btn pixel" onclick="skipQuestion()">Skip (-50)</button>
+              <button class="hint-btn pixel" onclick="showExtraHint()">Hint (-25)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="level-modal" id="levelModal" style="display: none;">
+          <div class="level-complete">
+            <div class="boss-defeated">🏰</div>
+            <h2 class="pixel">STAGE CLEAR!</h2>
+            <p id="levelCompleteText">Boss defeated! New area unlocked.</p>
+            <div class="loot-display" id="lootDisplay">
+              <span class="loot">🗡️ +1</span>
+              <span class="loot">🛡️ +1</span>
+              <span class="loot">💎 +100</span>
+            </div>
+            <button class="next-btn pixel" onclick="nextSection()">NEXT LEVEL</button>
+          </div>
+        </div>
+
+        <div class="game-menu" id="gameMenu" style="display: none;">
+          <div class="menu-panel">
+            <h2 class="pixel">PAUSE</h2>
+            <button class="menu-option pixel" onclick="resumeGame()">CONTINUE</button>
+            <button class="menu-option pixel" onclick="restartLevel()">RETRY</button>
+            <button class="menu-option pixel" onclick="showInstructions()">TUTORIAL</button>
+            <button class="menu-option pixel" onclick="returnToHub()">QUIT</button>
+          </div>
+        </div>
+
+        <div class="instructions" id="instructions" style="display: none;">
+          <div class="instructions-panel">
+            <h2 class="pixel">HOW TO PLAY</h2>
+            <div class="instruction-item">
+              <span class="icon pixel">A</span>
+              <p>Navigate through <strong>Game Engine, Art & Design</strong> worlds</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon pixel">B</span>
+              <p>Answer <strong>Game Dev Questions</strong> to defeat code bugs</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon pixel">🎮</span>
+              <p>Collect <strong>Sprites & Assets</strong> to build your game</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon pixel">👾</span>
+              <p>Fight <strong>Bosses</strong> (complex game systems)</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon pixel">⭐</span>
+              <p>Unlock <strong>Power-ups</strong> (game mechanics)</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon pixel">🏆</span>
+              <p>Ship your <strong>Game</strong> to players!</p>
+            </div>
+            <button class="close-btn pixel" onclick="hideInstructions()">OK</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="level-progress retro-progress">
+      <div class="progress-section" id="basicSection">
+        <span class="section-name pixel">ENGINE</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="basicProgress"></div>
+        </div>
+        <span class="fragment-status" id="basicStatus">⚪</span>
+      </div>
+      <div class="progress-section" id="intermediateSection">
+        <span class="section-name pixel">ART</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="intermediateProgress"></div>
+        </div>
+        <span class="fragment-status" id="intermediateStatus">⚪</span>
+      </div>
+      <div class="progress-section" id="advancedSection">
+        <span class="section-name pixel">DESIGN</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="advancedProgress"></div>
+        </div>
+        <span class="fragment-status" id="advancedStatus">⚪</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/memory-game-api.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

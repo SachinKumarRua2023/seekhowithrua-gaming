@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Dev Mission - App Development Adventure</title>
+  <link rel="stylesheet" href="css/game.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="mobile-bg" id="mobileBg"></div>
+  
+  <div class="game-wrapper">
+    <header class="game-header">
+      <div class="logo">📱 MOBILE<span>MISSION</span></div>
+      <div class="player-stats">
+        <div class="stat">
+          <span class="stat-label">Sprint</span>
+          <span class="stat-value" id="levelDisplay">1</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Story Points</span>
+          <span class="stat-value" id="scoreDisplay">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Features</span>
+          <span class="stat-value" id="keysDisplay">0/30</span>
+        </div>
+      </div>
+      <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </header>
+
+    <main class="game-main">
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+      
+      <div class="ui-overlay" id="uiOverlay">
+        <div class="quiz-modal" id="quizModal" style="display: none;">
+          <div class="quiz-container mobile-theme">
+            <div class="quiz-header">
+              <span class="section-badge" id="sectionBadge">UI/UX</span>
+              <span class="question-counter" id="questionCounter">1/25</span>
+            </div>
+            <div class="mobile-mockup">
+              <div class="phone-frame">
+                <div class="phone-screen" id="phoneScreen">
+                  <div class="app-interface">
+                    <div class="status-bar">9:41 📶 🔋</div>
+                    <div class="app-content" id="appContent">
+                      <!-- Dynamic app content -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="hint-box" id="hintBox">
+              <span class="hint-label">💡 User Story:</span>
+              <span class="hint-text" id="hintText">As a user, I want...</span>
+            </div>
+            <div class="question-box">
+              <h3 class="question-text" id="questionText">Loading user story...</h3>
+            </div>
+            <div class="options-grid" id="optionsGrid"></div>
+            <div class="quiz-footer">
+              <button class="skip-btn" onclick="skipQuestion()">Skip Sprint (-50)</button>
+              <button class="hint-btn" onclick="showExtraHint()">Product Owner (-25)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="level-modal" id="levelModal" style="display: none;">
+          <div class="level-complete">
+            <div class="release-animation">📲</div>
+            <h2>Feature Shipped!</h2>
+            <p id="levelCompleteText">App store ready! Users are loving it.</p>
+            <div class="app-metrics" id="appMetrics">
+              <span class="metric">⭐ Rating: <strong id="ratingValue">4.8</strong></span>
+              <span class="metric">📥 Downloads: <strong id="downloadValue">10K+</strong></span>
+            </div>
+            <button class="next-btn" onclick="nextSection()">Next Sprint</button>
+          </div>
+        </div>
+
+        <div class="game-menu" id="gameMenu" style="display: none;">
+          <div class="menu-panel">
+            <h2>Dev Menu</h2>
+            <button class="menu-option" onclick="resumeGame()">Resume Sprint</button>
+            <button class="menu-option" onclick="restartLevel()">Reset Sprint</button>
+            <button class="menu-option" onclick="showInstructions()">Guidelines</button>
+            <button class="menu-option" onclick="returnToHub()">Back to Board</button>
+          </div>
+        </div>
+
+        <div class="instructions" id="instructions" style="display: none;">
+          <div class="instructions-panel">
+            <h2>Mobile Development Guidelines</h2>
+            <div class="instruction-item">
+              <span class="icon">📱</span>
+              <p>Navigate through <strong>iOS, Android & Cross-Platform</strong> environments</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🎨</span>
+              <p>Implement <strong>UI/UX</strong> features based on user stories</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">⚡</span>
+              <p>Optimize for <strong>Performance</strong> and battery life</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🔒</span>
+              <p>Secure apps against <strong>Security</strong> vulnerabilities</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">📊</span>
+              <p>Integrate <strong>Analytics</strong> and push notifications</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🚀</span>
+              <p>Ship features to <strong>App Store</strong>!</p>
+            </div>
+            <button class="close-btn" onclick="hideInstructions()">Start Sprint</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="level-progress mobile-progress">
+      <div class="progress-section" id="basicSection">
+        <span class="section-name">UI/UX</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="basicProgress"></div>
+        </div>
+        <span class="fragment-status" id="basicStatus">⚪</span>
+      </div>
+      <div class="progress-section" id="intermediateSection">
+        <span class="section-name">Performance</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="intermediateProgress"></div>
+        </div>
+        <span class="fragment-status" id="intermediateStatus">⚪</span>
+      </div>
+      <div class="progress-section" id="advancedSection">
+        <span class="section-name">Native APIs</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="advancedProgress"></div>
+        </div>
+        <span class="fragment-status" id="advancedStatus">⚪</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/memory-game-api.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

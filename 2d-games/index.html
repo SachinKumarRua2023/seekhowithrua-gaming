@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D Learning Games | SeekhoWithRua Gaming</title>
+  <meta name="description" content="Play educational 2D games and learn Data Science, AI, Web Development, Mobile Development, and Game Development through interactive gameplay.">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0d0d2a 100%);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+    
+    /* Particles Background */
+    .particles {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    
+    .particle {
+      position: absolute;
+      width: 4px; height: 4px;
+      background: rgba(124, 58, 237, 0.3);
+      border-radius: 50%;
+      animation: float 20s infinite linear;
+    }
+    
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+    
+    /* Header */
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+      background: rgba(10, 10, 26, 0.8);
+      backdrop-filter: blur(10px);
+    }
+    
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #7c3aed, #00d4ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .logo span {
+      color: #9E9BFF;
+      -webkit-text-fill-color: #9E9BFF;
+    }
+    
+    nav a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      margin-left: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    
+    nav a:hover {
+      color: #7c3aed;
+    }
+    
+    /* Hero */
+    .hero {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 80px 20px 60px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .hero h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(36px, 6vw, 60px);
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #fff 0%, #7c3aed 50%, #00d4ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .hero p {
+      font-size: 20px;
+      color: rgba(255,255,255,0.7);
+      max-width: 700px;
+      margin: 0 auto 30px;
+      line-height: 1.6;
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: #7c3aed;
+      text-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 5px;
+    }
+    
+    /* Games Section */
+    .games-section {
+      position: relative;
+      z-index: 10;
+      padding: 60px 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 50px;
+      color: #fff;
+    }
+    
+    .section-title span {
+      color: #7c3aed;
+    }
+    
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 30px;
+    }
+    
+    /* Game Card */
+    .game-card {
+      background: linear-gradient(145deg, rgba(124, 58, 237, 0.1) 0%, rgba(10, 10, 30, 0.9) 100%);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 20px;
+      padding: 30px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.2), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .game-card:hover {
+      transform: translateY(-10px);
+      border-color: #7c3aed;
+      box-shadow: 0 20px 40px rgba(124, 58, 237, 0.3);
+    }
+    
+    .game-card:hover::before {
+      opacity: 1;
+    }
+    
+    .game-card > * {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .game-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #7c3aed, #00d4ff);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
+    }
+    
+    .game-card h3 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+    
+    .game-card p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    
+    .game-meta {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .badge {
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(124, 58, 237, 0.2);
+      color: #9E9BFF;
+      font-weight: 500;
+    }
+    
+    .badge.beginner { background: rgba(29, 158, 117, 0.2); color: #1D9E75; }
+    .badge.intermediate { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .badge.advanced { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    
+    .play-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #7c3aed, #00d4ff);
+      color: #fff;
+      text-decoration: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .play-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(124, 58, 237, 0.4);
+    }
+    
+    .play-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 10;
+      border-top: 1px solid rgba(124, 58, 237, 0.2);
+      background: rgba(10, 10, 26, 0.8);
+      padding: 40px;
+      text-align: center;
+      margin-top: 80px;
+    }
+    
+    footer p {
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+    }
+    
+    footer a {
+      color: #7c3aed;
+      text-decoration: none;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+      }
+      
+      nav a {
+        margin: 0 10px;
+      }
+      
+      .hero {
+        padding: 60px 20px 40px;
+      }
+      
+      .games-section {
+        padding: 40px 20px;
+      }
+      
+      .games-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .stats {
+        gap: 30px;
+      }
+      
+      .stat-value {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+  
+  <header>
+    <div class="logo">SEEKHO<span>WITHRUA</span></div>
+    <nav>
+      <a href="https://seekhowithrua.com">Home</a>
+      <a href="https://app.seekhowithrua.com/mnemonic-system">Learn</a>
+      <a href="https://gaming.seekhowithrua.com">Gaming Lab</a>
+      <a href="https://animationlab.seekhowithrua.com">Animation Lab</a>
+    </nav>
+  </header>
+  
+  <section class="hero">
+    <h1>2D Learning Games</h1>
+    <p>Master coding and data skills through interactive 2D adventures. Each game combines fun gameplay with real educational content.</p>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">5</div>
+        <div class="stat-label">Course Games</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">250+</div>
+        <div class="stat-label">Quiz Questions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">50</div>
+        <div class="stat-label">Total Levels</div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="games-section">
+    <h2 class="section-title">Choose Your <span>Adventure</span></h2>
+    
+    <div class="games-grid">
+      <!-- Data Science Quest -->
+      <div class="game-card">
+        <div class="game-icon">📊</div>
+        <h3>Data Science Quest</h3>
+        <p>Navigate through 10 levels of data exploration, from Python basics to advanced ML. Answer 250+ questions to become a Data Master.</p>
+        <div class="game-meta">
+          <span class="badge beginner">Python</span>
+          <span class="badge intermediate">Pandas</span>
+          <span class="badge advanced">ML</span>
+        </div>
+        <a href="data-science-quest/index.html" class="play-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"></polygon></svg>
+          Play Now
+        </a>
+      </div>
+      
+      <!-- AI Neural Navigator -->
+      <div class="game-card">
+        <div class="game-icon">🧠</div>
+        <h3>Neural Navigator</h3>
+        <p>Train neural networks level by level. Journey through Input, Hidden, and Output layers while learning Deep Learning and AI concepts.</p>
+        <div class="game-meta">
+          <span class="badge beginner">Neural Nets</span>
+          <span class="badge intermediate">Deep Learning</span>
+          <span class="badge advanced">AI</span>
+        </div>
+        <a href="ai-ml-adventure/index.html" class="play-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"></polygon></svg>
+          Play Now
+        </a>
+      </div>
+      
+      <!-- Web Dev Warrior -->
+      <div class="game-card">
+        <div class="game-icon">💻</div>
+        <h3>Web Dev Warrior</h3>
+        <p>Battle through Frontend, Backend, and Database worlds. Debug code, fix bugs, and deploy full-stack applications to production.</p>
+        <div class="game-meta">
+          <span class="badge beginner">Frontend</span>
+          <span class="badge intermediate">Backend</span>
+          <span class="badge advanced">Database</span>
+        </div>
+        <a href="web-dev-warrior/index.html" class="play-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"></polygon></svg>
+          Play Now
+        </a>
+      </div>
+      
+      <!-- Mobile Dev Mission -->
+      <div class="game-card">
+        <div class="game-icon">📱</div>
+        <h3>Mobile Dev Mission</h3>
+        <p>Complete app development sprints. Master UI/UX, Performance optimization, and Native APIs to ship features to the App Store.</p>
+        <div class="game-meta">
+          <span class="badge beginner">UI/UX</span>
+          <span class="badge intermediate">Performance</span>
+          <span class="badge advanced">Native APIs</span>
+        </div>
+        <a href="mobile-dev-mission/index.html" class="play-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"></polygon></svg>
+          Play Now
+        </a>
+      </div>
+      
+      <!-- Game Dev Quest -->
+      <div class="game-card">
+        <div class="game-icon">🎮</div>
+        <h3>Game Dev Quest</h3>
+        <p>Create games by learning Game Engines, Art & Animation, and Design. Battle bosses representing complex game systems.</p>
+        <div class="game-meta">
+          <span class="badge beginner">Engine</span>
+          <span class="badge intermediate">Art</span>
+          <span class="badge advanced">Design</span>
+        </div>
+        <a href="game-dev-quest/index.html" class="play-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"></polygon></svg>
+          Play Now
+        </a>
+      </div>
+    </div>
+  </section>
+  
+  <footer>
+    <p>Part of <a href="https://seekhowithrua.com">SeekhoWithRua</a> — India's unique learning platform. | <a href="https://gaming.seekhowithrua.com">Back to Gaming Hub</a></p>
+    <p style="margin-top: 10px; font-size: 12px;">Learn by playing. Master by doing. Be a Right Unique Allrounder.</p>
+  </footer>
+  
+  <script>
+    // Create animated particles
+    const particlesContainer = document.getElementById('particles');
+    for (let i = 0; i < 50; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.animationDelay = Math.random() * 20 + 's';
+      particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+      particlesContainer.appendChild(particle);
+    }
+  </script>
+</body>
+</html>
