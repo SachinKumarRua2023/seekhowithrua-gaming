@@ -489,6 +489,7 @@
     
     <div class="categories">
       <button class="category-btn active" onclick="filterGames('all')">All Games</button>
+      <button class="category-btn" onclick="filterGames('2d-learning')">2D Learning</button>
       <button class="category-btn" onclick="filterGames('beginner')">Beginner</button>
       <button class="category-btn" onclick="filterGames('intermediate')">Intermediate</button>
       <button class="category-btn" onclick="filterGames('advanced')">Advanced</button>
@@ -496,6 +497,21 @@
     </div>
     
     <div class="games-grid" id="gamesGrid">
+      <!-- 2D Learning Games Hub -->
+      <div class="game-card featured" data-category="2d-learning">
+        <div class="game-icon">🎮</div>
+        <h3>2D Learning Adventures</h3>
+        <p>Master Data Science, AI, Web Dev, Mobile Dev & Game Dev through 5 interactive 2D games. 250+ quiz questions across 50 levels!</p>
+        <div class="game-meta">
+          <span class="badge" style="background: rgba(139, 92, 246, 0.3); color: #a855f7;">5 Courses</span>
+          <span class="badge" style="background: rgba(236, 72, 153, 0.3); color: #ec4899;">Educational</span>
+        </div>
+        <a href="2d-games/index.html" class="play-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5,3 19,12 5,21"></polygon></svg>
+          Play 2D Games
+        </a>
+      </div>
+      
       <!-- Main Memory Game -->
       <div class="game-card" data-category="all">
         <div class="game-icon">🧠</div>
