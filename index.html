@@ -76,6 +76,12 @@
       -webkit-text-fill-color: #9E9BFF;
     }
     
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
     nav a {
       color: rgba(255,255,255,0.7);
       text-decoration: none;
@@ -87,6 +93,81 @@
     
     nav a:hover {
       color: #7c3aed;
+    }
+    
+    /* User Profile & Auth */
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .user-info {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: rgba(124, 58, 237, 0.1);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      padding: 8px 15px;
+      border-radius: 25px;
+    }
+    
+    .user-info.show {
+      display: flex;
+    }
+    
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #7c3aed;
+    }
+    
+    .user-name {
+      font-size: 13px;
+      color: #fff;
+      font-weight: 500;
+    }
+    
+    .logout-btn {
+      background: rgba(239, 68, 68, 0.2);
+      border: none;
+      color: #ef4444;
+      padding: 6px 12px;
+      border-radius: 15px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+    
+    .login-btn {
+      background: linear-gradient(135deg, #7c3aed, #00d4ff);
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .login-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(124, 58, 237, 0.4);
+    }
+    
+    .google-icon {
+      width: 18px;
+      height: 18px;
     }
     
     /* Hero Section */
@@ -367,6 +448,17 @@
       <a href="https://app.seekhowithrua.com/mnemonic-system">Learn</a>
       <a href="https://gaming.seekhowithrua.com">Gaming Lab</a>
       <a href="https://animationlab.seekhowithrua.com">Animation Lab</a>
+      <div class="user-section">
+        <div id="userInfo" class="user-info">
+          <img id="userAvatar" class="user-avatar" src="" alt="User">
+          <span id="userName" class="user-name"></span>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <button id="loginBtn" class="login-btn" onclick="loginWithGoogle()">
+          <svg class="google-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Sign in with Google
+        </button>
+      </div>
     </nav>
   </header>
   
@@ -531,7 +623,136 @@
     <p style="margin-top: 10px; font-size: 12px;">Train your brain. Improve your memory. Be a Right Unique Allrounder.</p>
   </footer>
   
+  <!-- Load Memory Game API Client -->
+  <script src="js/memory-game-api.js"></script>
+  
+  <!-- Google OAuth Script -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
   <script>
+    // Initialize user state
+    let googleClient = null;
+    
+    // Check if user is already logged in
+    function checkLoginState() {
+      if (memoryGameAPI.isLoggedIn()) {
+        showUserInfo(memoryGameAPI.getCurrentUser());
+      } else {
+        showLoginButton();
+      }
+    }
+    
+    // Show user info when logged in
+    function showUserInfo(user) {
+      document.getElementById('loginBtn').style.display = 'none';
+      document.getElementById('userInfo').classList.add('show');
+      document.getElementById('userName').textContent = user.first_name || user.username || user.email.split('@')[0];
+      if (user.profile_picture) {
+        document.getElementById('userAvatar').src = user.profile_picture;
+      } else {
+        document.getElementById('userAvatar').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email) + '&background=7c3aed&color=fff';
+      }
+    }
+    
+    // Show login button when logged out
+    function showLoginButton() {
+      document.getElementById('loginBtn').style.display = 'flex';
+      document.getElementById('userInfo').classList.remove('show');
+    }
+    
+    // Initialize Google Sign-In
+    function initializeGoogleAuth() {
+      if (typeof google !== 'undefined' && google.accounts) {
+        googleClient = google.accounts.oauth2.initTokenClient({
+          client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+          scope: 'email profile openid',
+          callback: handleGoogleResponse
+        });
+      }
+    }
+    
+    // Handle Google OAuth response
+    async function handleGoogleResponse(response) {
+      if (response.access_token) {
+        // Get user info from Google
+        try {
+          const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { 'Authorization': `Bearer ${response.access_token}` }
+          }).then(res => res.json());
+          
+          // Login to our backend
+          const result = await memoryGameAPI.googleLogin({
+            token: response.access_token,
+            email: userInfo.email,
+            name: userInfo.name,
+            googleId: userInfo.sub,
+            picture: userInfo.picture
+          });
+          
+          if (result.success) {
+            showUserInfo(result.user);
+            showNotification('Login successful!', 'success');
+          } else {
+            showNotification('Login failed: ' + result.error, 'error');
+          }
+        } catch (error) {
+          console.error('Google auth error:', error);
+          showNotification('Authentication failed', 'error');
+        }
+      }
+    }
+    
+    // Login with Google
+    function loginWithGoogle() {
+      if (googleClient) {
+        googleClient.requestAccessToken();
+      } else {
+        // Fallback: show alert to configure Google Client ID
+        showNotification('Google Login coming soon! Please check back later.', 'info');
+        console.log('Please configure YOUR_GOOGLE_CLIENT_ID in the script');
+      }
+    }
+    
+    // Logout
+    function logout() {
+      memoryGameAPI.logout();
+      showLoginButton();
+      showNotification('Logged out successfully', 'success');
+    }
+    
+    // Show notification
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      const colors = {
+        success: 'linear-gradient(135deg, #1D9E75, #128C7E)',
+        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        info: 'linear-gradient(135deg, #7c3aed, #00d4ff)'
+      };
+      
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${colors[type]};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 10000;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease;
+      `;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+    
     // Create animated particles
     const particlesContainer = document.getElementById('particles');
     for (let i = 0; i < 50; i++) {
@@ -562,6 +783,26 @@
         }
       });
     }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      checkLoginState();
+      initializeGoogleAuth();
+    });
+    
+    // Add notification animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
   
   <style>
