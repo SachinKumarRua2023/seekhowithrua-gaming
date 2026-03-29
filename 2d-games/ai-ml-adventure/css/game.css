@@ -305,6 +305,9 @@ body {
   cursor: pointer;
   transition: all 0.3s;
   text-align: left;
+  pointer-events: auto;
+  position: relative;
+  z-index: 150;
 }
 
 .option-btn:hover {
@@ -340,6 +343,9 @@ body {
   font-size: 12px;
   cursor: pointer;
   transition: all 0.3s;
+  pointer-events: auto;
+  position: relative;
+  z-index: 150;
 }
 
 .skip-btn:hover, .hint-btn:hover {
