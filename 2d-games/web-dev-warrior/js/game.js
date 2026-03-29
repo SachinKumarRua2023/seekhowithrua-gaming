@@ -550,6 +550,19 @@ function returnToHub() {
   window.location.href = '../../index.html';
 }
 
+// Global wrapper functions for HTML onclick handlers
+function skipQuestion() {
+  if (game) game.skipQuestion();
+}
+
+function showExtraHint() {
+  if (game) game.showExtraHint();
+}
+
+function nextSection() {
+  if (game) game.nextSection();
+}
+
 let game;
 document.addEventListener('DOMContentLoaded', () => {
   game = new WebDevWarriorGame();

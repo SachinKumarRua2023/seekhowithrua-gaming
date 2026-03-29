@@ -558,6 +558,19 @@ function returnToHub() {
   window.location.href = '../../index.html';
 }
 
+// Global wrapper functions for HTML onclick handlers
+function skipQuestion() {
+  if (game) game.skipQuestion();
+}
+
+function showExtraHint() {
+  if (game) game.showExtraHint();
+}
+
+function nextSection() {
+  if (game) game.nextSection();
+}
+
 // Initialize game
 let game;
 document.addEventListener('DOMContentLoaded', () => {
