@@ -664,7 +664,7 @@
     function initializeGoogleAuth() {
       if (typeof google !== 'undefined' && google.accounts) {
         googleClient = google.accounts.oauth2.initTokenClient({
-          client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace with your actual Google Client ID
+          client_id: '308869456999-94fdla0p2nnekglcbvfir3e1oo0d41dr.apps.googleusercontent.com',
           scope: 'email profile openid',
           callback: handleGoogleResponse
         });
@@ -707,9 +707,7 @@
       if (googleClient) {
         googleClient.requestAccessToken();
       } else {
-        // Fallback: show alert to configure Google Client ID
-        showNotification('Google Login coming soon! Please check back later.', 'info');
-        console.log('Please configure YOUR_GOOGLE_CLIENT_ID in the script');
+        showNotification('Google Sign-In loading... Please try again in a moment.', 'info');
       }
     }
     
