@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Quest - AI & Data Science Adventure Game</title>
+  <link rel="stylesheet" href="css/game.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Background Animation -->
+  <div class="bg-particles" id="bgParticles"></div>
+  
+  <!-- Game Container -->
+  <div class="game-wrapper">
+    <!-- Header -->
+    <header class="game-header">
+      <div class="logo">DATA<span>QUEST</span></div>
+      <div class="player-stats">
+        <div class="stat">
+          <span class="stat-label">Level</span>
+          <span class="stat-value" id="levelDisplay">1</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Score</span>
+          <span class="stat-value" id="scoreDisplay">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Keys</span>
+          <span class="stat-value" id="keysDisplay">0/30</span>
+        </div>
+      </div>
+      <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="game-main">
+      <!-- Canvas Layer -->
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+      
+      <!-- UI Overlay -->
+      <div class="ui-overlay" id="uiOverlay">
+        <!-- Quiz Modal -->
+        <div class="quiz-modal" id="quizModal" style="display: none;">
+          <div class="quiz-container">
+            <div class="quiz-header">
+              <span class="section-badge" id="sectionBadge">Basic</span>
+              <span class="question-counter" id="questionCounter">1/25</span>
+            </div>
+            <div class="hint-box" id="hintBox">
+              <span class="hint-label">💡 Hint:</span>
+              <span class="hint-text" id="hintText">Answer the previous question to unlock this hint!</span>
+            </div>
+            <div class="question-box">
+              <h3 class="question-text" id="questionText">Loading question...</h3>
+            </div>
+            <div class="options-grid" id="optionsGrid">
+              <!-- Options will be generated here -->
+            </div>
+            <div class="quiz-footer">
+              <button class="skip-btn" onclick="skipQuestion()">Skip (-50 pts)</button>
+              <button class="hint-btn" onclick="showExtraHint()">Get Hint (-25 pts)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level Complete Modal -->
+        <div class="level-modal" id="levelModal" style="display: none;">
+          <div class="level-complete">
+            <div class="key-animation">🔑</div>
+            <h2>Level Complete!</h2>
+            <p id="levelCompleteText">You've earned a Bronze Key Fragment!</p>
+            <div class="fragments-display" id="fragmentsDisplay">
+              <span class="fragment bronze">🥉</span>
+            </div>
+            <button class="next-btn" onclick="nextSection()">Continue</button>
+          </div>
+        </div>
+
+        <!-- Game Menu -->
+        <div class="game-menu" id="gameMenu" style="display: none;">
+          <div class="menu-panel">
+            <h2>Game Menu</h2>
+            <button class="menu-option" onclick="resumeGame()">Resume</button>
+            <button class="menu-option" onclick="restartLevel()">Restart Level</button>
+            <button class="menu-option" onclick="showInstructions()">How to Play</button>
+            <button class="menu-option" onclick="returnToHub()">Return to Hub</button>
+          </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions" id="instructions" style="display: none;">
+          <div class="instructions-panel">
+            <h2>How to Play Data Quest</h2>
+            <div class="instruction-item">
+              <span class="icon">🎮</span>
+              <p>Use <strong>Arrow Keys</strong> or <strong>WASD</strong> to move your character</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">❓</span>
+              <p>Walk into <strong>Question Nodes</strong> to answer Data Science quiz questions</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🔗</span>
+              <p>Each answer <strong>unlocks a hint</strong> for the next question</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🚧</span>
+              <p>Overcome <strong>hurdles</strong> and obstacles to reach the next question</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🔑</span>
+              <p>Complete all 25 questions to earn <strong>3 Key Fragments</strong></p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🏆</span>
+              <p>Collect all fragments to unlock the next level!</p>
+            </div>
+            <button class="close-btn" onclick="hideInstructions()">Got it!</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Level Progress -->
+    <div class="level-progress">
+      <div class="progress-section" id="basicSection">
+        <span class="section-name">Basic</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="basicProgress"></div>
+        </div>
+        <span class="fragment-status" id="basicStatus">⚪</span>
+      </div>
+      <div class="progress-section" id="intermediateSection">
+        <span class="section-name">Intermediate</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="intermediateProgress"></div>
+        </div>
+        <span class="fragment-status" id="intermediateStatus">⚪</span>
+      </div>
+      <div class="progress-section" id="advancedSection">
+        <span class="section-name">Advanced</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="advancedProgress"></div>
+        </div>
+        <span class="fragment-status" id="advancedStatus">⚪</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/memory-game-api.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

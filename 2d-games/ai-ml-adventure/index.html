@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Neural Navigator - Machine Learning Adventure Game</title>
+  <link rel="stylesheet" href="css/game.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="bg-particles" id="bgParticles"></div>
+  
+  <div class="game-wrapper">
+    <header class="game-header">
+      <div class="logo">NEURAL<span>NAVIGATOR</span></div>
+      <div class="player-stats">
+        <div class="stat">
+          <span class="stat-label">Neuron</span>
+          <span class="stat-value" id="levelDisplay">1</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Synapses</span>
+          <span class="stat-value" id="scoreDisplay">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Models</span>
+          <span class="stat-value" id="keysDisplay">0/30</span>
+        </div>
+      </div>
+      <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </header>
+
+    <main class="game-main">
+      <canvas id="gameCanvas" width="800" height="600"></canvas>
+      
+      <div class="ui-overlay" id="uiOverlay">
+        <div class="quiz-modal" id="quizModal" style="display: none;">
+          <div class="quiz-container neural-theme">
+            <div class="quiz-header">
+              <span class="section-badge" id="sectionBadge">Input Layer</span>
+              <span class="question-counter" id="questionCounter">1/25</span>
+            </div>
+            <div class="neural-visualization">
+              <div class="neuron-node active" id="neuron1"></div>
+              <div class="connection"></div>
+              <div class="neuron-node" id="neuron2"></div>
+              <div class="connection"></div>
+              <div class="neuron-node" id="neuron3"></div>
+            </div>
+            <div class="hint-box" id="hintBox">
+              <span class="hint-label">💡 Weight Update:</span>
+              <span class="hint-text" id="hintText">Initializing neural pathway...</span>
+            </div>
+            <div class="question-box">
+              <h3 class="question-text" id="questionText">Loading training data...</h3>
+            </div>
+            <div class="options-grid" id="optionsGrid"></div>
+            <div class="quiz-footer">
+              <button class="skip-btn" onclick="skipQuestion()">Skip Epoch (-50)</button>
+              <button class="hint-btn" onclick="showExtraHint()">Backprop Hint (-25)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="level-modal" id="levelModal" style="display: none;">
+          <div class="level-complete">
+            <div class="model-animation">🧠</div>
+            <h2>Neural Network Trained!</h2>
+            <p id="levelCompleteText">Model accuracy improved!</p>
+            <div class="accuracy-display" id="accuracyDisplay">
+              <span class="metric">Accuracy: <strong id="accuracyValue">85%</strong></span>
+              <span class="metric">Loss: <strong id="lossValue">0.15</strong></span>
+            </div>
+            <button class="next-btn" onclick="nextSection()">Next Layer</button>
+          </div>
+        </div>
+
+        <div class="game-menu" id="gameMenu" style="display: none;">
+          <div class="menu-panel">
+            <h2>System Menu</h2>
+            <button class="menu-option" onclick="resumeGame()">Resume Training</button>
+            <button class="menu-option" onclick="restartLevel()">Reset Model</button>
+            <button class="menu-option" onclick="showInstructions()">Architecture Guide</button>
+            <button class="menu-option" onclick="returnToHub()">Exit to Lab</button>
+          </div>
+        </div>
+
+        <div class="instructions" id="instructions" style="display: none;">
+          <div class="instructions-panel">
+            <h2>Neural Network Architecture Guide</h2>
+            <div class="instruction-item">
+              <span class="icon">🧠</span>
+              <p>Navigate through <strong>Neural Layers</strong> to train your AI model</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">⚡</span>
+              <p>Solve <strong>ML/AI Questions</strong> to activate neurons</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">📊</span>
+              <p>Each correct answer <strong>improves model accuracy</strong></p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🔄</span>
+              <p>Avoid <strong>Gradient Vanishing</strong> obstacles</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🎯</span>
+              <p>Reach <strong>90%+ Accuracy</strong> to complete each layer</p>
+            </div>
+            <div class="instruction-item">
+              <span class="icon">🏆</span>
+              <p>Deploy your <strong>Trained Model</strong> to the next level!</p>
+            </div>
+            <button class="close-btn" onclick="hideInstructions()">Initialize Training</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="level-progress neural-progress">
+      <div class="progress-section" id="basicSection">
+        <span class="section-name">Input Layer</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="basicProgress"></div>
+        </div>
+        <span class="fragment-status" id="basicStatus">⚪</span>
+      </div>
+      <div class="progress-section" id="intermediateSection">
+        <span class="section-name">Hidden Layer</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="intermediateProgress"></div>
+        </div>
+        <span class="fragment-status" id="intermediateStatus">⚪</span>
+      </div>
+      <div class="progress-section" id="advancedSection">
+        <span class="section-name">Output Layer</span>
+        <div class="progress-bar">
+          <div class="progress-fill" id="advancedProgress"></div>
+        </div>
+        <span class="fragment-status" id="advancedStatus">⚪</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/memory-game-api.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
